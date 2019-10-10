@@ -1,17 +1,21 @@
 #----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
-
+import os
 import json
 import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+
+from flask_script import Manager
+from flask_migrate import Migrate
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -20,9 +24,9 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # TODO: connect to a local postgresql database
-
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
@@ -38,6 +42,11 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    seeking_talent = db.Column(db.Boolean, default=False)
+    seeking_description = db.Column(db.Text, nullable=True)
+
+    def __repr__(self):
+      return f'<Venue name={name} >'
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -53,8 +62,22 @@ class Artist(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+class Show(db.Model):
+  __tablename__ = 'shows'
+ 
+  id = db.Column(db.Integer, primary_key=True)
+  artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
+  venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
+  start_time = db.Column(db.DateTime)
 
+
+  def __repr__(self):
+    return f'<Show {artist_id} {venue_id}>'
+
+          
+
+# db.create_all()
+    # TODO: implement any missing fields, as a database migration using Flask-Migrate
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
 #----------------------------------------------------------------------------#
@@ -108,6 +131,8 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }]
+  result = Venue.query.first()
+  print(result)
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -243,6 +268,8 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
+
+  result  = Artist.query.with_entities(Artist.id, Artist.name).all()
   data=[{
     "id": 4,
     "name": "Guns N Petals",
@@ -253,10 +280,16 @@ def artists():
     "id": 6,
     "name": "The Wild Sax Band",
   }]
+  print(result)
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
+  search_term=request.form.get('search_term')
+  result = Artist.query.filter(
+    Artist.name.ilike(f'%{search_term}%')
+    ).all()
+  print(f'results {result}')
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
@@ -415,6 +448,20 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
+  try:
+    new_artist = Artist (
+      name = request.form.get('name'),
+      city = request.form.get('city'),
+      state = request.form.get('phone'),
+      phone = request.form.get('name'),
+      image_link = request.form.get('image_link'),
+      genres = request.form.get('genres'),
+      facebook_link = request.form.get('facebook_link')
+    )
+    db.session.add(new_artist)
+    db.session.commit()
+  finally:
+    db.close()
 
   # on successful db insert, flash success
   flash('Artist ' + request.form['name'] + ' was successfully listed!')
@@ -512,6 +559,7 @@ if not app.debug:
 
 # Default port:
 if __name__ == '__main__':
+
     app.run()
 
 # Or specify port manually:
