@@ -7,8 +7,24 @@
 			{{ venue.name }}
 		</h1>
         <a class="btn btn-primary" href = {{ url_for('edit_venue' ,venue_id=venue.id) }}>Edit Venue</a>
+        <button class="btn btn-primary" onClick=deleteVenue({{venue.id}})>Delete Venue</button>
 
+    <script>
+        function deleteVenue(venueId){
+            return fetch(`${venueId}`, {
+                method: 'delete'
+              })
+            .then(response =>
+               alert('Venue with id ' + venue_id + ' was successfully deleted!')
+
+            ).catch(() =>
+                alert('Error deleting Venue with id ' + venue_id + '!')
+            );
+        }
+
+    </script>
 		<p class="subtitle">
+
 			ID: {{ venue.id }}
 		</p>
 		<div class="genres">

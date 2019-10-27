@@ -7,7 +7,7 @@ from logging import Formatter, FileHandler
 
 import babel
 import dateutil.parser
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, abort
 from flask_migrate import Migrate
 from flask_moment import Moment
 
@@ -144,30 +144,19 @@ def create_venue_submission():
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-    print('delete')
-
     try:
-        venue = Venue.get_by_id(venue_id)
-        print(dir(venue))
+        venue = Venue.query.get(venue_id)
         db.session.delete(venue)
         db.session.commit()
-        print('yes')
         flash('Venue with id ' + venue_id + ' was successfully deleted!')
-
     except:
-        flash('Error deleting Venue with id ' + venue_id + '!')
-        print(sys.exc_info())
+        # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
         db.session.rollback()
-
+        flash('Error deleting Venue with id ' + venue_id + '!'), 302
+        print(sys.exc_info())
     finally:
         db.session.close()
 
-        # TODO: Complete this endpoint for taking a venue_id, and using
-    # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
-    # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-    # clicking that button delete it from the db then redirect the user to the homepage
-    # return redirect(url_for('index'))
     return render_template('pages/home.html')
 
 
