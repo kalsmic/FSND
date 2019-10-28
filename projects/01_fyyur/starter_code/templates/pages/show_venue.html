@@ -11,15 +11,9 @@
 
     <script>
         function deleteVenue(venueId){
-            return fetch(`${venueId}`, {
+            fetch(`${venueId}`, {
                 method: 'delete'
-              })
-            .then(response =>
-               alert('Venue with id ' + venue_id + ' was successfully deleted!')
-
-            ).catch(() =>
-                alert('Error deleting Venue with id ' + venue_id + '!')
-            );
+              });
         }
 
     </script>

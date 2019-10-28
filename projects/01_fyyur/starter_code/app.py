@@ -111,7 +111,9 @@ def create_venue_submission():
             phone=data.get('phone'),
             image_link=data.get('image_link'),
             facebook_link=data.get('facebook_link'),
-            website=data.get('website')
+            website=data.get('website'),
+            seeking_talent=data.get('seeking_talent'),
+            seeking_description=data.get('seeking_description')
         )
 
         venue_exists = Venue.exists(name=data.get('name'))
@@ -141,23 +143,36 @@ def create_venue_submission():
 
     return render_template('pages/home.html')
 
-
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
+    print('reached here')
+    # return redirect(url_for('index'))
+    # return render_template('pages/home.html')
+
     try:
         venue = Venue.query.get(venue_id)
-        db.session.delete(venue)
+        print(dir(venue.shows))
+        if venue.shows:
+       #       soft delete
+            venue.deleted = True
+            print('soft delete')
+            flash('Venue with id ' + venue_id + ' was successfully soft deleted!')
+            pass
+        else:
+            db.session.delete(venue)
+            print('permannet deletion')
+            flash('Venue with id ' + venue_id + ' was successfully permanently deleted!')
         db.session.commit()
-        flash('Venue with id ' + venue_id + ' was successfully deleted!')
     except:
         # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+        flash('Error deleting Venue with id ' + venue_id + '!')
         db.session.rollback()
-        flash('Error deleting Venue with id ' + venue_id + '!'), 302
         print(sys.exc_info())
     finally:
         db.session.close()
 
-    return render_template('pages/home.html')
+    # return render_template('pages/home.html')
+    return 'True'
 
 
 #  Artists
@@ -223,6 +238,8 @@ def edit_artist_submission(artist_id):
         artist.image_link = data.get('image_link')
         artist.facebook_link = data.get('facebook_link')
         artist.website = data.get('website')
+        artist.seeking_venue=data.get('seeking_venue')
+        artist.seeking_description=data.get('seeking_description')
         updated_genres = data.get('genres')
 
         # Delete genres that are not in updated_genres
@@ -269,6 +286,8 @@ def edit_venue_submission(venue_id):
         vn.image_link = data.get('image_link')
         vn.facebook_link = data.get('facebook_link')
         vn.website = data.get('website')
+        vn.seeking_talent=data.get('seeking_talent')
+        vn.seeking_description=data.get('seeking_description')
         updated_genres = data.get('genres')
 
         # Delete genres that are not in updated_genres
@@ -310,7 +329,9 @@ def create_artist_submission():
             state=data.get('phone'),
             phone=data.get('name'),
             image_link=data.get('image_link'),
-            facebook_link=data.get('facebook_link')
+            facebook_link=data.get('facebook_link'),
+            seeking_venue=data.get('seeking_venue'),
+            seeking_description=data.get('seeking_description')
         )
         artist_exists = Artist.exists(name=data.get('name'))
         if artist_exists:

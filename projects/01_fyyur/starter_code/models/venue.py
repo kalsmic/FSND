@@ -17,6 +17,7 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.Text, nullable=True)
     website = db.Column(db.String())
+    deleted = db.Column(db.Boolean, default=False)
 
     shows = db.relationship('Show', backref='venues', lazy=True)
     genres = db.relationship('Genre', secondary='venue_genre', viewonly=True)
