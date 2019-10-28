@@ -129,12 +129,21 @@ To start and run the local development server,
   ```
   $ pip install -r requirements.txt
   ```
+3. Export the dataase ur:
+  ```
+  $ export SQLALCHEMY_DATABASE_URI='postgresql://username:password@localhost:5432/database'
 
-3. Run the development server:
+  ```
+4. Set up and Seed the database:
+  ```
+  $ flask db migrate
+  $ python manage.py seed_db
+  ```
+5. Run the development server:
   ```
   $ export FLASK_APP=myapp
   $ export FLASK_ENV=development # enables debug mode
   $ python3 app.py
   ```
 
-4. Navigate to Home page [http://localhost:5000](http://localhost:5000)
+6. Navigate to Home page [http://localhost:5000](http://localhost:5000)
